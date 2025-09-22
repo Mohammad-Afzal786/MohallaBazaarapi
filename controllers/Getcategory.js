@@ -15,11 +15,13 @@ const getCategories = async (req, res) => {
 
     // ✅ Group by parent, preserving the order from database
     const grouped = categories.reduce((acc, category) => {
-      let parent = acc.find(item => item.parentcategoryName === category.parentcategoryName);
+      let parent = acc.find(item => item.parentCategoryName === category.parentCategoryName);
 
       if (!parent) {
         parent = {
-          parentcategoryName: category.parentcategoryName || "Others",
+          parentCategoryName: category.parentCategoryName || "Others",
+          parentCategoryId: category.parentCategoryId || null,
+          parentCategoryImage: category.parentCategoryImage || null,
           categories: []
         };
         acc.push(parent);
@@ -28,9 +30,9 @@ const getCategories = async (req, res) => {
       parent.categories.push({
         _id: category._id,
         categoryName: category.categoryName,
-        image: category.image,
-        categorysubtitle:category.categorysubtitle,
-        categoryId:category.category_id
+        categoryimage: category.categoryimage || null,
+        categorysubtitle: category.categorysubtitle || null,
+        categoryId: category.categoryId
       });
 
       return acc;
