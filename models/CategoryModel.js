@@ -16,6 +16,10 @@ const categorySchema = new mongoose.Schema(
       minlength: [2, "Category name must be at least 2 characters"],
       maxlength: [50, "Category name must be at most 50 characters"],
     },
+    categorysubtitle: {
+      type: String,
+      trim: true,
+    },
     categoryimage: {
       type: String,
       trim: true,
@@ -28,6 +32,10 @@ const categorySchema = new mongoose.Schema(
       trim: true,
     },
     parentCategoryImage: {
+      type: String,
+      trim: true,
+    },
+    parentCategorytitle: {
       type: String,
       trim: true,
     },

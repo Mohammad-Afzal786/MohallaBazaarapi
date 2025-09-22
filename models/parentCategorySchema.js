@@ -21,6 +21,11 @@ const parentCategorySchema = new mongoose.Schema(
       required: [true, "Parent category image is required"],
       trim: true,
     },
+    parentCategorytitle: {
+      type: String,
+      required: [true, "Parent category subtitle is required"],
+      trim: true,
+    },
     isActive: {
       type: Boolean,
       default: true,

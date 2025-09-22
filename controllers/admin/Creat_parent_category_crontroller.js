@@ -4,7 +4,7 @@ const NAME_REGEX = /^.{2,50}$/;
 
 const createParentCategory = async (req, res) => {
   try {
-    const { parentCategoryName, parentCategoryImage, isActive } = req.body;
+    const { parentCategoryName, parentCategoryImage, isActive ,parentCategorytitle} = req.body;
 
     // Validation
     if (!parentCategoryName) {
@@ -13,7 +13,9 @@ const createParentCategory = async (req, res) => {
     if (!parentCategoryImage) {
       return res.status(400).json({ status: "fail", message: "Image required" });
     }
-
+if (!parentCategorytitle) {
+      return res.status(400).json({ status: "fail", message: "parentCategorytitle required" });
+    }
     // Duplicate check
     const exists = await ParentCategory.findOne({ parentCategoryName });
     if (exists) {
@@ -25,6 +27,7 @@ const createParentCategory = async (req, res) => {
       parentCategoryName,
       parentCategoryImage,
       isActive: isActive ?? true,
+      parentCategorytitle,
     });
 
     const saved = await category.save();

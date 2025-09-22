@@ -44,6 +44,7 @@ const createCategory = async (req, res) => {
       parentCategoryName: parent.parentCategoryName,
       parentCategoryId: parent.parentCategoryId,
       parentCategoryImage: parent.parentCategoryImage,
+      parentCategorytitle:parent.parentCategorytitle,
       categoryName,
       categorysubtitle,
       categoryimage: categoryimage,
