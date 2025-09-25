@@ -1,56 +1,130 @@
 import mongoose from "mongoose";
+import Counter from "./Counter.js";
 
-// ✅ ProductModel Schema - All mandatory fields
-const ProductModel = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
   {
-    // Category reference (mandatory)
+    productId: {
+      type: String, // auto generated like P-0001
+    },
+
+    // 🔹 Parent category reference
+    parentCategoryId: {
+      type: String,
+      trim: true,
+    },
+   
+
+    // 🔹 Category reference
     categoryId: {
-      type: String, // Because Category._id is UUID string
+      type: String, // Because Category.categoryId is custom (C-0001)
       ref: "Category",
       required: [true, "categoryId is required"],
     },
-    categoryName: {
+    
+    // 🔹 Product details
+    productName: {
       type: String,
+      required: [true, "productName is required"],
       trim: true,
-      required: [true, "categoryName is required"],
+      minlength: [2, "Product name must be at least 2 characters"],
+      maxlength: [100, "Product name must be at most 100 characters"],
     },
-    categoryImage: {
+    productimage: {
       type: String,
+      required: [true, "image is required"],
       trim: true,
-      required: [true, "categoryImage is required"],
+    },
+    productquantity: {
+      type: String,
+      required: [true, "quantity is required"],
+      trim: true,
+    },
+    productprice: {
+      type: Number,
+      required: [true, "price is required"],
+    },
+    productdiscountPrice: {
+      type: Number,
+      
+    },
+    productsaveAmount: {
+      type: Number,
+     required:true
+    },
+    productrating: {
+      type: Number,
+     required:true
+    },
+    productratag: {
+      type: Number, 
+    },
+     productDescription: {
+      type: String,
+    },
+    productreviews: {
+      type: String,
+      required:true
+    },
+    producttime: {
+      type: String,
+      required:true
     },
 
-    subCategoryName: {
-      type: String,
-      trim: true,
-      required: [true, "subCategoryName is required"],
+    // 🔹 Status
+    isActive: {
+      type: Boolean,
+      default: true,
     },
-    subCategoryImage: {
-      type: String,
-      trim: true,
-      required: [true, "subCategoryImage is required"],
-    },
-
-    // Product details (mandatory)
-    productName: { type: String, required: [true, "productName is required"], trim: true },
-    image: { type: String, required: [true, "image is required"], trim: true },
-    quantity: { type: String, required: [true, "quantity is required"], trim: true },
-    price: { type: Number, required: [true, "price is required"] },
-    discountPrice: { type: Number, required: [true, "discountPrice is required"] },
-    saveAmount: { type: Number, required: [true, "saveAmount is required"] },
-    rating: { type: Number, required: [true, "rating is required"] },
-    reviews: { type: String, required: [true, "reviews is required"] },
-    time: { type: String, required: [true, "time is required"] },
-
-    // Status
-    isActive: { type: Boolean, required: [true, "isActive is required"] },
   },
   { timestamps: true }
 );
 
-// ✅ Indexes for faster querying
-ProductModel.index({ categoryId: 1 });
-ProductModel.index({ isActive: 1 });
+// ✅ Pre-save hook → auto generate sequential productId
+productSchema.pre("save", async function (next) {
+  if (!this.isNew || this.productId) return next();
 
-// Export model
-export default mongoose.model("Product", ProductModel);
+  try {
+    // 1️⃣ Counter increment (atomic)
+    let counter = await Counter.findOneAndUpdate(
+      { _id: "productId" },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+
+    // 2️⃣ DB last record check (fallback)
+    const last = await this.constructor
+      .findOne({}, {}, { sort: { createdAt: -1 } })
+      .lean();
+    let lastIdNumber = 0;
+    if (last && last.productId) {
+      const match = last.productId.match(/P-(\d+)/);
+      if (match) lastIdNumber = parseInt(match[1], 10);
+    }
+
+    // 3️⃣ Sync counter if behind
+    if (counter.seq <= lastIdNumber) {
+      counter = await Counter.findOneAndUpdate(
+        { _id: "productId" },
+        { $set: { seq: lastIdNumber + 1 } },
+        { new: true, upsert: true }
+      );
+    }
+
+    // 4️⃣ Assign final ID
+    this.productId = `P-${counter.seq.toString().padStart(4, "0")}`;
+    console.log("Generated productId:", this.productId);
+
+    return next();
+  } catch (err) {
+    console.error("Product ID generation failed:", err);
+    return next(err);
+  }
+});
+
+// ✅ Indexes
+productSchema.index({ categoryId: 1 });
+productSchema.index({ parentCategoryId: 1 });
+productSchema.index({ isActive: 1 });
+
+const Product = mongoose.model("Product", productSchema);
+export default Product;

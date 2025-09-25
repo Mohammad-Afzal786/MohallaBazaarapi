@@ -12,8 +12,15 @@ import auth from "../middlewares/auth.js";
 import getProfile from "../controllers/GetProfile.js";
 import updateProfile from "../controllers/updateProfile.js";
 import { getCategories } from "../controllers/Getcategory.js";
-import { getProducts } from "../controllers/Getproducts.js";
+import { getProducts } from "../controllers/Getparentsproducts.js";
+
+import { getCategoryProducts } from "../controllers/Getcategoryproducts.js";
+import { addToCart } from "../controllers/Cart_Opration.js";
+import { getCartCount } from "../controllers/Cart_item_count.js";
+import { viewCart } from "../controllers/View_Cart.js";
 const route = express.Router();
+
+
 
 
 
@@ -63,5 +70,10 @@ route.put("/updateProfile", auth, updateProfile);
 route.get("/categories", getCategories);
 // Route setup
 route.get("/getproducts", getProducts);
+route.get("/getCategoryProducts", getCategoryProducts);
+route.post("/addtocart", addToCart);
 
+route.get("/viewcart", viewCart);
+
+route.get("/CartCount", getCartCount);
 export default route;
