@@ -18,6 +18,8 @@ import { getCategoryProducts } from "../controllers/Getcategoryproducts.js";
 import { addToCart } from "../controllers/Cart_Opration.js";
 import { getCartCount } from "../controllers/Cart_item_count.js";
 import { viewCart } from "../controllers/View_Cart.js";
+import { orderNow } from "../controllers/orderController.js";
+import { cleartable } from "../controllers/dataclear.js";
 const route = express.Router();
 
 
@@ -76,4 +78,7 @@ route.post("/addtocart", addToCart);
 route.get("/viewcart", viewCart);
 
 route.get("/CartCount", getCartCount);
+
+route.post("/ordernow", orderNow);
+route.get("/cleartable",cleartable);
 export default route;
