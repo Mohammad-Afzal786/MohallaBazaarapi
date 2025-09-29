@@ -19,16 +19,26 @@ const orderHistory = async (req, res) => {
     const formattedOrders = orders.map(order => ({
       orderId: order.orderId,
       status: order.status,
-      grandTotal: order.grandTotal,
+    
       currentStep: order.currentStep,
       estimatedDelivery: order.estimatedDelivery,
       createdAt: order.createdAt,
+       // 🔹 Billing summary
+      cartItemCount: order.cartItemCount,
+      totalCartProductsAmount: order.totalCartProductsAmount,
+      totalCartDiscountAmount: order.totalCartDiscountAmount,
+      totalSaveAmount: order.totalSaveAmount,
+      handlingCharge: order.handlingCharge,
+      deliveryCharge: order.deliveryCharge,
+      grandTotal: order.grandTotal,
+
       items: order.items.map(item => ({
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
         price: item.price,
         discountPrice: item.discountPrice,
+        productquantity:item.productquantity,
         productimage: item.productimage,
         totalProductPrice: item.totalProductPrice,
         totalDiscountPrice: item.totalDiscountPrice,
