@@ -2,7 +2,7 @@ import Order from "../models/Order.js";
 
 const orderHistory = async (req, res) => {
   try {
-    const { userId } = req.query; // userId path parameter
+    const { userId } = req.query;
 
     if (!userId) {
       return res.status(400).json({ status: "error", message: "userId is required" });
@@ -15,15 +15,15 @@ const orderHistory = async (req, res) => {
       return res.status(404).json({ status: "error", message: "No orders found" });
     }
 
-    // 🔹 Format response
+    // 🔹 Format response including billing summary and items
     const formattedOrders = orders.map(order => ({
       orderId: order.orderId,
       status: order.status,
-    
       currentStep: order.currentStep,
       estimatedDelivery: order.estimatedDelivery,
       createdAt: order.createdAt,
-       // 🔹 Billing summary
+
+      // 🔹 Billing summary
       cartItemCount: order.cartItemCount,
       totalCartProductsAmount: order.totalCartProductsAmount,
       totalCartDiscountAmount: order.totalCartDiscountAmount,
@@ -32,13 +32,14 @@ const orderHistory = async (req, res) => {
       deliveryCharge: order.deliveryCharge,
       grandTotal: order.grandTotal,
 
+      // 🔹 Order items
       items: order.items.map(item => ({
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
         price: item.price,
         discountPrice: item.discountPrice,
-        productquantity:item.productquantity,
+        productquantity: item.productquantity,
         productimage: item.productimage,
         totalProductPrice: item.totalProductPrice,
         totalDiscountPrice: item.totalDiscountPrice,

@@ -4,8 +4,7 @@ import Order from "../models/Order.js";
 
 const orderNow = async (req, res) => {
   try {
-    const { userId } = req.body; // Accept userId from body (no JWT needed for testing)
-
+    const { userId } = req.body;
     if (!userId) {
       return res.status(400).json({ status: "error", message: "userId is required" });
     }
@@ -16,18 +15,18 @@ const orderNow = async (req, res) => {
       return res.status(400).json({ status: "error", message: "Cart is empty" });
     }
 
-    // 2️⃣ Fetch corresponding product details
+    // 2️⃣ Fetch products from DB
     const productIds = cartItems.map(item => item.productId);
     const products = await Product.find({ productId: { $in: productIds } });
 
-    let cartTotalAmount = 0;
+    // 3️⃣ Prepare order items and calculate totals
     let cartItemCount = 0;
-    let totalCartDiscountAmount = 0;
     let totalCartProductsAmount = 0;
+    let totalCartDiscountAmount = 0;
     let totalSaveAmount = 0;
+    let cartTotalAmount = 0;
 
-    // 3️⃣ Map cart items to order items
-    const cartList = cartItems.map(item => {
+    const orderItems = cartItems.map(item => {
       const product = products.find(p => p.productId === item.productId);
       if (!product) return null;
 
@@ -40,11 +39,11 @@ const orderNow = async (req, res) => {
       const productsaveAmount = totalProductPrice - totalDiscountPrice;
 
       // Update totals
-      cartTotalAmount += totalDiscountPrice;
       cartItemCount += quantity;
-      totalCartDiscountAmount += totalDiscountPrice;
       totalCartProductsAmount += totalProductPrice;
+      totalCartDiscountAmount += totalDiscountPrice;
       totalSaveAmount += productsaveAmount;
+      cartTotalAmount += totalDiscountPrice;
 
       return {
         productId: product.productId,
@@ -60,17 +59,19 @@ const orderNow = async (req, res) => {
       };
     }).filter(Boolean);
 
-    // 4️⃣ Delivery charges
+    // 4️⃣ Calculate charges
     const handlingCharge = 0;
-    const deliveryChargeFreeAmount = 100;
-    const deliveryCharge = cartTotalAmount >= deliveryChargeFreeAmount ? 0 : 25;
+    const deliveryCharge = cartTotalAmount >= 100 ? 0 : 25;
     const grandTotal = cartTotalAmount + handlingCharge + deliveryCharge;
 
-    // 5️⃣ Save order
+    // 5️⃣ Save order in DB (including all billing fields)
     const newOrder = new Order({
       userId,
-      items: cartList,
-      cartTotalAmount,
+      items: orderItems,
+      cartItemCount,
+      totalCartProductsAmount,
+      totalCartDiscountAmount,
+      totalSaveAmount,
       handlingCharge,
       deliveryCharge,
       grandTotal,
@@ -88,21 +89,7 @@ const orderNow = async (req, res) => {
     return res.status(201).json({
       status: "success",
       message: "Order placed successfully",
-      data: {
-        orderId: savedOrder.orderId,
-        cartItemCount,
-        totalCartProductsAmount,
-        totalCartDiscountAmount,
-        totalSaveAmount,
-        handlingCharge,
-        deliveryCharge,
-        grandTotal,
-        items: cartList,
-        currentStep: savedOrder.currentStep,
-        estimatedDelivery: savedOrder.estimatedDelivery,
-        status: savedOrder.status,
-        createdAt: savedOrder.createdAt
-      }
+      data: savedOrder // sab DB fields already saved
     });
 
   } catch (err) {

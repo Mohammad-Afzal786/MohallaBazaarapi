@@ -19,15 +19,18 @@ const orderSchema = new mongoose.Schema({
       productsaveAmount: { type: Number, required: true }    // Savings per product
     }
   ],
-
-  cartTotalAmount: { type: Number, required: true },
+ // 🔹 Billing summary
+  cartItemCount: { type: Number, required: true },
+  totalCartProductsAmount: { type: Number, required: true },
+  totalCartDiscountAmount: { type: Number, required: true },
+  totalSaveAmount: { type: Number, required: true },
   handlingCharge: { type: Number, default: 0 },
   deliveryCharge: { type: Number, default: 0 },
   grandTotal: { type: Number, required: true },
 
   currentStep: { type: Number, default: 0 }, // 0=Placed, 1=Packed, 2=Out for Delivery, 3=Delivered
   estimatedDelivery: { type: String, default: "20 mins" },
-  status: { type: String, default: "Placed" } // Order status
+  status: { type: String, default: "Placed" }
 
 }, { timestamps: true });
 
