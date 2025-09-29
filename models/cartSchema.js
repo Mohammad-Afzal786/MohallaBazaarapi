@@ -1,24 +1,20 @@
-// models/CartModel.js
 import mongoose from "mongoose";
 
 const cartSchema = new mongoose.Schema(
   {
     userId: { 
       type: String, 
-     
       required: true 
     },
     productId: { 
       type: String, 
-     
       required: true 
     },
     quantity: { 
       type: Number, 
-      required: true, 
-      min: 1 
+      required: true,
+      default: 1
     },
-   
   },
   { timestamps: true }
 );
