@@ -21,6 +21,7 @@ import { viewCart } from "../controllers/View_Cart.js";
 import { orderNow } from "../controllers/orderController.js";
 import { cleartable } from "../controllers/dataclear.js";
 import { orderHistory } from "../controllers/orderHistoryController.js";
+import { getNotifications } from "../controllers/usernotification.js";
 const route = express.Router();
 
 
@@ -83,4 +84,6 @@ route.get("/CartCount", getCartCount);
 route.post("/ordernow", orderNow);
 route.get("/cleartable",cleartable);
 route.get("/orderhistory",orderHistory);
+route.get("/get-notifications",getNotifications);
+
 export default route;

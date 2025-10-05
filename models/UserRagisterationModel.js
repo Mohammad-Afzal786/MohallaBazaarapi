@@ -7,7 +7,7 @@ const UserSchema=new mongoose.Schema({
     },
     lastName:{
          type: String,
-        required: true
+       
     },
     email:{
         type: String,
@@ -22,7 +22,10 @@ const UserSchema=new mongoose.Schema({
     type:Date,
     default:Date.now
     },
-
+ fcmtoken:{
+        type: String,
+     
+    },
      phone:{
         type: String,
         default: true

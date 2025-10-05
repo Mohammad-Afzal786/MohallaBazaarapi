@@ -26,7 +26,7 @@ const BASE_LOCK_TIME = 5 * 60 * 1000; // Base lock time in milliseconds (5 minut
 
 const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password,fcmtoken } = req.body;
 
         // 1️⃣ Check required fields
         if (!email || !password) {
@@ -75,6 +75,12 @@ const loginUser = async (req, res) => {
         // 6️⃣ Successful login → reset failed attempts & lock
         user.loginAttempts = 0;
         user.lockUntil = undefined;
+         // ✅ 6️⃣ Save or Update FCM Token if provided
+        if (fcmtoken) {
+            user.fcmtoken = fcmtoken;
+           
+        }
+
         await user.save();
 
         // 7️⃣ Check JWT secrets
@@ -116,7 +122,7 @@ const loginUser = async (req, res) => {
             accessToken,
             refreshToken,
             userid: user._id,
-            user: { id: user._id, firstName: user.firstName, lastName:user.lastName,email: user.email,phone:user.phone }
+            user: { id: user._id, firstName: user.firstName, lastName:user.lastName,email: user.email,phone:user.phone, fcmtoken: user.fcmtoken || null }
         });
 
     } catch (err) {
