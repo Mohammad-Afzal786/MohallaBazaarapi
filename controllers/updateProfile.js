@@ -56,9 +56,9 @@ import User from "../models/UserRagisterationModel.js";
  */
 const updateProfile = async (req, res) => {
     try {
-        const { username, fathername, city } = req.body;
+        const { username, useremail, userphone } = req.body;
 
-        // 1️⃣ Find user using ID from JWT (auth middleware attaches req.user.userId)
+        
         const user = await User.findById(req.user.userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });

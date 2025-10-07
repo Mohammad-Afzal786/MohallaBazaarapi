@@ -1,4 +1,4 @@
-import UserNotification from "../../models/notification.js";
+import UserNotification from "../models/notification.js";
 
 const getNotifications = async (req, res) => {
   try {
@@ -18,7 +18,7 @@ const getNotifications = async (req, res) => {
     );
 
     if (!userNotifications || userNotifications.notifications.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: "success",
         message: "No notifications found",
         notifications: [],

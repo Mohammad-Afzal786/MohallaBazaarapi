@@ -22,6 +22,10 @@ import { orderNow } from "../controllers/orderController.js";
 import { cleartable } from "../controllers/dataclear.js";
 import { orderHistory } from "../controllers/orderHistoryController.js";
 import { getNotifications } from "../controllers/usernotification.js";
+import { getHomeCategoryProducts } from "../controllers/homeCategoryProducts.js";
+import { getBanners } from "../controllers/Get_Banner.js";
+import { deleteNotificationByid } from "../controllers/deletenotificaton.js";
+import { userProfileUpdate } from "../controllers/userprofileupdate.js";
 const route = express.Router();
 
 
@@ -85,5 +89,8 @@ route.post("/ordernow", orderNow);
 route.get("/cleartable",cleartable);
 route.get("/orderhistory",orderHistory);
 route.get("/get-notifications",getNotifications);
-
+route.get("/homeCategoryProducts",getHomeCategoryProducts);
+route.get("/getbanner", getBanners);
+route.delete("/deleteNotificationByid", deleteNotificationByid);
+route.put("/userProfileUpdate/:userId", userProfileUpdate);
 export default route;
