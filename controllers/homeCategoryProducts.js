@@ -19,13 +19,19 @@ import Category from "../models/CategoryModel.js";
           .lean();
 
         const productData = products.map((p) => ({
-          productId: p.productId,
-          productName: p.productName,
-          productimage: p.productimage,
-          productquantity: p.productquantity,
-          productprice: p.productprice,
-          productdiscountPrice: p.productdiscountPrice,
-          productsaveAmount: p.productsaveAmount,
+         productId: p.productId,
+      productName: p.productName,
+      productimage: p.productimage,
+      productquantity: p.productquantity,
+      productprice: p.productprice,
+      productdiscountPrice: p.productdiscountPrice,
+      productsaveAmount: p.productsaveAmount,
+      productrating: p.productrating,
+      productratag: p.productratag,
+      productDescription: p.productDescription,
+      productreviews: p.productreviews,
+      producttime: p.producttime,
+       productsimagedetails: p.productsimagedetails || [p.productimage], // ✅ 
           
         }));
 
