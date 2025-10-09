@@ -13,7 +13,6 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
    
-
     // 🔹 Category reference
     categoryId: {
       type: String, // Because Category.categoryId is custom (C-0001)
@@ -27,7 +26,7 @@ const productSchema = new mongoose.Schema(
       required: [true, "productName is required"],
       trim: true,
       minlength: [2, "Product name must be at least 2 characters"],
-      maxlength: [100, "Product name must be at most 100 characters"],
+      maxlength: [1000, "Product name must be at most 100 characters"],
     },
     productimage: {
       type: String,
@@ -45,7 +44,7 @@ const productSchema = new mongoose.Schema(
     },
     productdiscountPrice: {
       type: Number,
-      
+  
     },
     productsaveAmount: {
       type: Number,
@@ -64,6 +63,10 @@ const productSchema = new mongoose.Schema(
     productreviews: {
       type: String,
       required:true
+    },
+    productsimagedetails: {
+      type: [String], // Array of image URLs
+      default: [],
     },
     producttime: {
       type: String,

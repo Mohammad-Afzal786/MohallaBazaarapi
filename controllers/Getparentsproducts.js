@@ -79,6 +79,7 @@ export const getProducts = async (req, res) => {
             productDescription: p.productDescription,
             productreviews: p.productreviews,
             producttime: p.producttime,
+            productsimagedetails: p.productsimagedetails || [p.productimage], // ✅ 
           })),
         };
       })

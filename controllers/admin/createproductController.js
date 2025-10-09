@@ -2,7 +2,7 @@ import Product from "../../models/ProductModel.js";
 import Category from "../../models/CategoryModel.js";
 import ParentCategory from "../../models/parentCategorySchema.js";
 
-const nameRegex = /^.{2,100}$/; // productName 2-100 characters
+const nameRegex = /^.{2,1000}$/; // productName 2-100 characters
 
 const createProduct = async (req, res) => {
   try {
@@ -20,6 +20,7 @@ const createProduct = async (req, res) => {
       productreviews,
       producttime,
       isActive,
+      productsimagedetails, // ✅ added
     } = req.body;
 
     // 🔹 Trim strings
@@ -94,6 +95,7 @@ const createProduct = async (req, res) => {
       productimage,
       productquantity: productquantity || "1 pc",
       productprice,
+      productsimagedetails: Array.isArray(productsimagedetails) ? productsimagedetails : [], // ✅ handle array
       productdiscountPrice: productdiscountPrice || 0,
       productsaveAmount: productsaveAmount || 0,
       productrating: productrating || 0,
