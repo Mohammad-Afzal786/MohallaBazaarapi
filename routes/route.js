@@ -26,6 +26,8 @@ import { getHomeCategoryProducts } from "../controllers/homeCategoryProducts.js"
 import { getBanners } from "../controllers/Get_Banner.js";
 import { deleteNotificationByid } from "../controllers/deletenotificaton.js";
 import { userProfileUpdate } from "../controllers/userprofileupdate.js";
+import { getAllParentCategories } from "../controllers/Get_parent_category.js";
+import { logUserActivity } from "../controllers/activityController.js";
 const route = express.Router();
 
 
@@ -93,4 +95,7 @@ route.get("/homeCategoryProducts",getHomeCategoryProducts);
 route.get("/getbanner", getBanners);
 route.delete("/deleteNotificationByid", deleteNotificationByid);
 route.put("/userProfileUpdate/:userId", userProfileUpdate);
+route.get("/get_parent-category", getAllParentCategories);
+
+route.post("/useractivity", logUserActivity);
 export default route;
