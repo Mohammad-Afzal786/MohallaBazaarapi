@@ -28,6 +28,7 @@ import { deleteNotificationByid } from "../controllers/deletenotificaton.js";
 import { userProfileUpdate } from "../controllers/userprofileupdate.js";
 import { getAllParentCategories } from "../controllers/Get_parent_category.js";
 import { logUserActivity } from "../controllers/activityController.js";
+import { trackSingleOrder } from "../controllers/trackSingleOrder.js";
 const route = express.Router();
 
 
@@ -98,4 +99,5 @@ route.put("/userProfileUpdate/:userId", userProfileUpdate);
 route.get("/get_parent-category", getAllParentCategories);
 
 route.post("/useractivity", logUserActivity);
+route.get("/trackOrderById/:orderId", trackSingleOrder);
 export default route;

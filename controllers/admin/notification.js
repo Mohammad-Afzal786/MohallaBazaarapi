@@ -58,7 +58,7 @@ const sendNotification = async (req, res) => {
     for (let i = 0; i < messages.length; i += BATCH_SIZE) {
       const batch = messages.slice(i, i + BATCH_SIZE);
       const response = await admin.messaging().sendEach(batch);
-      // console.log("Responses per token:", response.responses);
+       console.log("Responses per token:", response.responses);
 
       totalSuccess += response.successCount;
       totalFailure += response.failureCount;
