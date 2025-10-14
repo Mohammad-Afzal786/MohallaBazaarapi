@@ -24,7 +24,7 @@ const createUser = async (req, res) => {
         phone = phone?.trim();
 
         // 1️⃣ Required fields check
-        if (!firstName || !lastName || !email || !password || !phone) {
+        if (!firstName  || !email || !password || !phone) {
             return res.status(400).json({ message: "All required fields must be provided" });
         }
 
