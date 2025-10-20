@@ -4,6 +4,7 @@ import Counter from "./Counter.js"; // Used for sequential orderId generation
 const orderSchema = new mongoose.Schema({
   orderId: { type: String, unique: true }, // sequential orderId like O-000001
   userId: { type: String, required: true },
+  useraddress: { type: String, required: true },
 
   items: [
     {

@@ -1,31 +1,29 @@
 import User from "../models/UserRagisterationModel.js";
 
 /**
- * @desc   Check if a user exists by email
+ * @desc   Check if a user exists by phone
  * @route  POST /api/auth/forgot-password
  * @access Public
  */
+const phoneRegex = /^\d{10,}$/; // कम से कम 10 अंकों का फ़ोन
 
 const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { phone } = req.body;
 
-    // Validate input
-    if (!email || typeof email !== "string") {
-      return res.status(400).json({
-        success: false,
-        error: "Valid email is required",
-      });
+    // फ़ोन नंबर फॉर्मेट चेक
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ message: "फ़ोन नंबर कम से कम 10 अंकों का होना चाहिए।" });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = phone.trim();
 
     // Find user
-    const user = await User.findOne({ email: normalizedEmail });
+    const user = await User.findOne({ phone: normalizedPhone });
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "User not found",
+        error: "इस नंबर से कोई भी यूज़र अभी तक रजिस्टर्ड नहीं है।",
       });
     }
 
@@ -33,8 +31,8 @@ const forgotPassword = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: {
-        message: "User exists with this email",
-        userId: user._id, // optional (remove if sensitive)
+        message: "इस नंबर से यूज़र मौजूद है।",
+        userId: user._id, 
       },
     });
   } catch (err) {

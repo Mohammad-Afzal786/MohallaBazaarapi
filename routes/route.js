@@ -29,6 +29,7 @@ import { userProfileUpdate } from "../controllers/userprofileupdate.js";
 import { getAllParentCategories } from "../controllers/Get_parent_category.js";
 import { logUserActivity } from "../controllers/activityController.js";
 import { trackSingleOrder } from "../controllers/trackSingleOrder.js";
+import { cancelOrderbyuser } from "../controllers/order_cancel_byuser.js";
 const route = express.Router();
 
 
@@ -100,4 +101,5 @@ route.get("/get_parent-category", getAllParentCategories);
 
 route.post("/useractivity", logUserActivity);
 route.get("/trackOrderById/:orderId", trackSingleOrder);
+route.post("/ordercacelbyuser/:orderId",cancelOrderbyuser);
 export default route;

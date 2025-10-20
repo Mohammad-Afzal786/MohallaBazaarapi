@@ -4,42 +4,28 @@ import User from "../models/UserRagisterationModel.js";
 import RefreshToken from "../models/RefreshTokenModel.js";
 import dotenv from "dotenv";
 dotenv.config();
-
+const phoneRegex = /^.{10,}$/; // At least 6 characters
 // --- Configurable constants ---
 const MAX_ATTEMPTS = 5;               // Maximum failed login attempts before lock
 const BASE_LOCK_TIME = 5 * 60 * 1000; // Base lock time in milliseconds (5 minutes)
 
-/**
- * POST /api/login
- * User Login API
- * 
- * Features:
- * 1. Validates required fields (email & password)
- * 2. Checks if user exists and email is verified
- * 3. Implements failed login attempt tracking
- * 4. Exponential backoff lock on repeated failed attempts
- * 5. Generates Access Token (15 min) and Refresh Token (7 days)
- * 6. Stores Refresh Token safely in DB, removing old tokens
- * 7. Resets failed attempts on successful login
- * 8. Clear JSON responses for Flutter / frontend integration
- */
-
 const loginUser = async (req, res) => {
     try {
-        const { email, password,fcmtoken } = req.body;
+        const { phone, password,fcmtoken } = req.body;
 
         // 1️⃣ Check required fields
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email and password required" });
+        if (!phone || !password) {
+            return res.status(400).json({ message: "फ़ोन नंबर और पासवर्ड भरना ज़रूरी है।" });
         }
-
+// 2️⃣ phone format check
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).json({ message: "फ़ोन नंबर कम से कम 10 अंकों का होना चाहिए।" });
+        }
         // 2️⃣ Find user by email
-        const user = await User.findOne({ email: email.toLowerCase() });
+        const user = await User.findOne({ phone: phone });
         if (!user) {
-            return res.status(401).json({ message: "Invalid User Please Register" });
+            return res.status(401).json({ message: "इस नंबर से अभी तक कोई रजिस्ट्रेशन नहीं हुआ है, क्रिएट अकाउंट पेज पर जाकर अकाउंट बना लीजिए।" });
         }
-
-       
 
         // 4️⃣ Check if account is currently locked
         if (user.lockUntil && user.lockUntil > Date.now()) {
@@ -122,7 +108,7 @@ const loginUser = async (req, res) => {
             accessToken,
             refreshToken,
             userid: user._id,
-            user: { id: user._id, firstName: user.firstName, lastName:user.lastName,email: user.email,phone:user.phone, fcmtoken: user.fcmtoken || null }
+            user: { id: user._id, name: user.name,phone:user.phone, fcmtoken: user.fcmtoken || null }
         });
 
     } catch (err) {

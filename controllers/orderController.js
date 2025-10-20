@@ -4,7 +4,7 @@ import Order from "../models/Order.js";
 
 const orderNow = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId ,useraddress} = req.body;
     if (!userId) {
       return res.status(400).json({ status: "error", message: "userId is required" });
     }
@@ -75,9 +75,10 @@ const orderNow = async (req, res) => {
       handlingCharge,
       deliveryCharge,
       grandTotal,
-      currentStep: 2,
       estimatedDelivery: "30 mins",
-      status: "Placed"
+      currentStep: 0,
+      status: "Placed",
+      useraddress:useraddress
     });
 
     const savedOrder = await newOrder.save();

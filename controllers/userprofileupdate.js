@@ -3,7 +3,7 @@ import User from "../models/UserRagisterationModel.js";
 const userProfileUpdate = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { firstName, email, phone } = req.body;
+    const { name,} = req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -16,7 +16,7 @@ const userProfileUpdate = async (req, res) => {
     // 🔹 Find and update
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { firstName, email, phone },
+      { name },
       { new: true, runValidators: true }
     ).select("-__v -password"); // exclude __v and password
 

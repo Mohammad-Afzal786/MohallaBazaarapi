@@ -7,7 +7,6 @@ import Category from "../models/CategoryModel.js";
     // 🔹 Fetch top 10 active categories
     const categories = await Category.find({ isActive: true })
       .sort({ createdAt: -1 }) // latest categories first
-      .limit(10)
       .lean();
 
     // 🔹 For each category, fetch top products
@@ -15,7 +14,6 @@ import Category from "../models/CategoryModel.js";
       categories.map(async (cat) => {
         const products = await Product.find({ categoryId: cat.categoryId, isActive: true })
           .sort({ soldCount: -1 }) // top-selling products first
-          .limit(10)
           .lean();
 
         const productData = products.map((p) => ({
