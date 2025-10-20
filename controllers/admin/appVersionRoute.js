@@ -3,7 +3,7 @@ const appversion = async (req, res) => {
   try {
     const appInfo = {
       latestVersion: "1.0.2", // 👈 current latest version
-      apkUrl: "https://mohallabazaar.shop/MohallaBazaar.apk", // 👈 direct APK download link
+      apkUrl: "https://github.com/Mohammad-Afzal786/MohallaBazaarWeb/releases/download/v1.0.2/MohallaBazaar.apk", // 👈 direct APK download link
       changelog: "🚀 New UI, bug fixes, and performance improvements.",
       forceUpdate: false, // 👈 true = user cannot skip update
       releaseDate: "2025-10-20",
