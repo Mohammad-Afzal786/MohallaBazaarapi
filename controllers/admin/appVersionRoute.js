@@ -1,4 +1,4 @@
-import AppVersion from "../../models/AppVersion.js";
+
 const appversion = async (req, res) => {
   try {
     const appInfo = {
