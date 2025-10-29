@@ -23,7 +23,7 @@ const viewCart = async (req, res) => {
           cartTotalAmount: 0,
           handlingCharge: 0,
           deliveryCharge: 0,
-          needToAddForFreeDelivery: 100,
+          needToAddForFreeDelivery: 0,
           grandTotal: 0,
           totalCartDiscountAmount: 0,
           totalCartProductsAmount: 0,
@@ -75,8 +75,8 @@ const viewCart = async (req, res) => {
 
     // 4️⃣ Totals & delivery
     const handlingCharge = 0;
-    const deliveryChargeFreeAmount = 100;
-    const deliveryCharge = cartTotalAmount >= deliveryChargeFreeAmount ? 0 : 25;
+    const deliveryChargeFreeAmount = 0;
+    const deliveryCharge = cartTotalAmount >= deliveryChargeFreeAmount ? 0 : 0;
     const grandTotal = cartTotalAmount + handlingCharge + deliveryCharge;
     const needToAddForFreeDelivery = cartTotalAmount >= deliveryChargeFreeAmount
       ? 0

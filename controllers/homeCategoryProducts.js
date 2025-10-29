@@ -14,18 +14,31 @@ const shuffleArray = (array) => {
 const getHomeCategoryProducts = async (req, res) => {
   try {
     // 🔹 Fetch all active categories (no limit)
-    const categories = await Category.find({ isActive: true })
+    let categories = await Category.find({ isActive: true })
       .sort({ createdAt: -1 }) // latest categories first
       .lean();
+
+         // 🔹 Move only "Fresh Vegetables" (exact match) to top
+    categories = categories.sort((a, b) => {
+      if (a.categoryName === "Fresh Vegetables") return -1;
+      if (b.categoryName === "Fresh Vegetables") return 1;
+      return 0;
+    });
+
+
 
     // 🔹 For each category, fetch all active products
     const categoriesWithProducts = await Promise.all(
       categories.map(async (cat) => {
         let products = await Product.find({ categoryId: cat.categoryId, isActive: true })
+     
           .lean();
+          
 
         // 🔀 Shuffle products for random order
         products = shuffleArray(products);
+         // 🔹 Limit after shuffle
+        products = products.slice(0, 10);
 
         const productData = products.map((p) => ({
           productId: p.productId,

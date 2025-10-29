@@ -30,6 +30,7 @@ import { getAllParentCategories } from "../controllers/Get_parent_category.js";
 import { logUserActivity } from "../controllers/activityController.js";
 import { trackSingleOrder } from "../controllers/trackSingleOrder.js";
 import { cancelOrderbyuser } from "../controllers/order_cancel_byuser.js";
+import { saveFcmToken } from "../controllers/FcmController.js";
 const route = express.Router();
 
 
@@ -102,4 +103,5 @@ route.get("/get_parent-category", getAllParentCategories);
 route.post("/useractivity", logUserActivity);
 route.get("/trackOrderById/:orderId", trackSingleOrder);
 route.post("/ordercacelbyuser/:orderId",cancelOrderbyuser);
+route.post("/fcm/save", saveFcmToken);
 export default route;

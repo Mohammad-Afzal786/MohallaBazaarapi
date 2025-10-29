@@ -1,6 +1,13 @@
 import Product from "../models/ProductModel.js";
 import Category from "../models/CategoryModel.js";
 
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
 // GET /api/categoryProducts?categoryId=<id>
 export const getCategoryProducts = async (req, res) => {
   try {
@@ -27,9 +34,13 @@ export const getCategoryProducts = async (req, res) => {
       });
     }
 
+    
+      
     // Fetch products under this category
-    const products = await Product.find({ categoryId, isActive: true }).lean();
+    let products = await Product.find({ categoryId, isActive: true }).lean();
 
+        // 🔀 Shuffle products for random order
+        products = shuffleArray(products);
     const productData = products.map((p) => ({
       productId: p.productId,
       productName: p.productName,
