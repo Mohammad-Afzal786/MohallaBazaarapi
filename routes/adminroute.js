@@ -22,4 +22,5 @@ adminroute.post("/create_parent_category", createParentCategory);
 adminroute.post('/send-notification', sendNotification);
 adminroute.post('/addbanner', addBanner);
 adminroute.get('/appversion', appversion);
+
 export default adminroute;

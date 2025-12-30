@@ -22,6 +22,16 @@ app.use(express.json());
 app.use('/api',route);
 app.use('/admin',adminroute);
 
+app.get("/", (req, res) => {
+  res.send("🚍 Mohalla Bazaar API is running...");
+});
+// 🔥 PING API (Render wake-up ke liye)
+app.get("/ping", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+
+  });
+});
 
 app.listen(port, () => {
     console.log(`Server is running at port: ${port}`);
