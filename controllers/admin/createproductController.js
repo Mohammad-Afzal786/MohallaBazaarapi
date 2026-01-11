@@ -2,123 +2,115 @@ import Product from "../../models/ProductModel.js";
 import Category from "../../models/CategoryModel.js";
 import ParentCategory from "../../models/parentCategorySchema.js";
 
-const nameRegex = /^.{2,1000}$/; // productName 2-100 characters
+const nameRegex = /^.{2,1000}$/;
 
 const createProduct = async (req, res) => {
   try {
-    let {
-      categoryName,
-      productName,
-      productimage,
-      productquantity,
-      productprice,
-      productdiscountPrice,
-      productsaveAmount,
-      productrating,
-      productratag,
-      productDescription,
-      productreviews,
-      producttime,
-      isActive,
-      productsimagedetails, // ✅ added
-    } = req.body;
+    const products = Array.isArray(req.body) ? req.body : [req.body];
 
-    // 🔹 Trim strings
-    categoryName = categoryName?.trim();
-    productName = productName?.trim();
-    productimage = productimage?.trim();
-    productquantity = productquantity?.trim();
-    productreviews = productreviews?.trim();
-    producttime = producttime?.trim();
-
-    // 1️⃣ Required validation
-    if (!categoryName || !productName || productprice === undefined) {
-      return res.status(400).json({
-        status: "error",
-        message: "categoryName, productName and productprice are required",
-      });
+    if (products.length === 0) {
+      return res.status(400).json({ status: "error", message: "Product data required" });
     }
 
-    // 2️⃣ Product name validation
-    if (!nameRegex.test(productName)) {
-      return res.status(400).json({
-        status: "error",
-        message: "Product name must be 2-100 characters",
+    const createdProducts = [];
+    const skippedProducts = [];
+
+    for (let item of products) {
+      let {
+        categoryName,
+        productName,
+        productimage,
+        productrating,
+        productratag,
+        productDescription,
+        productreviews,
+        producttime,
+        isActive,
+        productsimagedetails,
+        variants
+      } = item;
+
+      // Trim strings
+      categoryName = categoryName?.trim();
+      productName = productName?.trim();
+      productimage = productimage?.trim();
+      productreviews = productreviews?.trim();
+      producttime = producttime?.trim();
+
+      if (!categoryName || !productName) {
+        skippedProducts.push({ productName, reason: "Missing required fields" });
+        continue;
+      }
+
+      // Category & parent check
+      const category = await Category.findOne({ categoryName, isActive: true });
+      if (!category) {
+        skippedProducts.push({ productName, reason: "Category not found" });
+        continue;
+      }
+      const parent = await ParentCategory.findOne({
+        parentCategoryId: category.parentCategoryId,
+        isActive: true
       });
+      if (!parent) {
+        skippedProducts.push({ productName, reason: "Parent category not found" });
+        continue;
+      }
+
+      // Duplicate check
+      const existing = await Product.findOne({ categoryId: category.categoryId, productName });
+      if (existing) {
+        skippedProducts.push({ productName, reason: "Already exists" });
+        continue;
+      }
+
+      // Ensure at least one variant exists
+      if (!Array.isArray(variants) || variants.length === 0) {
+        skippedProducts.push({ productName, reason: "No variants provided" });
+        continue;
+      }
+
+      // 🔹 CREATE PRODUCT
+      const newProduct = new Product({
+        parentCategoryId: parent.parentCategoryId,
+        categoryId: category.categoryId,
+        productName,
+        productimage,
+        productsimagedetails: Array.isArray(productsimagedetails) ? productsimagedetails : [],
+        productrating: productrating || 0,
+        productratag: productratag || 0,
+        productDescription: productDescription || "",
+        productreviews: productreviews || "0",
+        producttime: producttime || "0 mins",
+        isActive: isActive !== undefined ? isActive : true,
+        variants: variants.map(v => ({
+          productquantity: v.productquantity,
+          productprice: v.productprice,
+          productdiscountPrice: v.productdiscountPrice || 0,
+          productsaveAmount: v.productsaveAmount || 0,
+          stock: v.stock || 999,
+          isDefault: v.isDefault || false
+        }))
+      });
+
+      await newProduct.save();
+      createdProducts.push(newProduct);
     }
 
-    // 3️⃣ Category lookup
-    const category = await Category.findOne({ categoryName, isActive: true });
-    if (!category) {
-      return res.status(404).json({
-        status: "error",
-        message: `Category '${categoryName}' not found`,
-      });
+    if (createdProducts.length === 0) {
+      return res.status(409).json({ status: "error", message: "No product inserted", skippedProducts });
     }
-
-    // 4️⃣ Parent category lookup
-    const parent = await ParentCategory.findOne({
-      parentCategoryId: category.parentCategoryId,
-      isActive: true,
-    });
-    
-    if (!parent) {
-      return res.status(404).json({
-        status: "error",
-        message: `Parent category for '${categoryName}' not found`,
-      });
-    }
-
-    // 5️⃣ Duplicate check
-    const existing = await Product.findOne({
-      categoryId: category.categoryId,
-      productName,
-    });
-    if (existing) {
-      return res.status(409).json({
-        status: "error",
-        message: "Product already exists in this category",
-      });
-    }
-
-    // 6️⃣ Save product with parent + category details
-    const newProduct = new Product({
-      // 🔹 Parent category details
-      parentCategoryId: parent.parentCategoryId,
-     
-
-      // 🔹 Category details
-      categoryId: category.categoryId,
-   
-      // 🔹 Product details
-      productName,
-      productimage,
-      productquantity: productquantity || "1 pc",
-      productprice,
-      productsimagedetails: Array.isArray(productsimagedetails) ? productsimagedetails : [], // ✅ handle array
-      productdiscountPrice: productdiscountPrice || 0,
-      productsaveAmount: productsaveAmount || 0,
-      productrating: productrating || 0,
-      productratag: productratag || 0,
-      productDescription: productDescription || "",
-      productreviews: productreviews || "0",
-      producttime: producttime || "0 mins",
-      isActive: isActive !== undefined ? isActive : true,
-    });
-
-    const savedProduct = await newProduct.save();
 
     return res.status(201).json({
       status: "success",
-      message: "Product created successfully",
-      data: savedProduct,
+      message: "Bulk product insert completed",
+      inserted: createdProducts.length,
+      skipped: skippedProducts.length,
+      skippedProducts
     });
   } catch (err) {
-    console.error("Error in createProduct:", err);
-    return res.status(500).json({
-      status: "error",
-      message: "Something went wrong while creating product",
-    });
+    console.error("Bulk product error:", err);
+    return res.status(500).json({ status: "error", message: "Something went wrong" });
   }
 };
 

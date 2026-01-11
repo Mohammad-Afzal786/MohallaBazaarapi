@@ -4,69 +4,97 @@ import Order from "../models/Order.js";
 
 const orderNow = async (req, res) => {
   try {
-    const { userId ,useraddress} = req.body;
-    if (!userId) {
-      return res.status(400).json({ status: "error", message: "userId is required" });
+    const { userId, useraddress } = req.body;
+
+    if (!userId || !useraddress) {
+      return res.status(400).json({
+        status: "error",
+        message: "userId and useraddress are required"
+      });
     }
 
     // 1️⃣ Fetch cart items
     const cartItems = await Cart.find({ userId });
-    if (!cartItems || cartItems.length === 0) {
-      return res.status(400).json({ status: "error", message: "Cart is empty" });
+    if (!cartItems.length) {
+      return res.status(400).json({
+        status: "error",
+        message: "Cart is empty"
+      });
     }
 
-    // 2️⃣ Fetch products from DB
-    const productIds = cartItems.map(item => item.productId);
-    const products = await Product.find({ productId: { $in: productIds } });
+    // 2️⃣ Fetch products
+    const productIds = cartItems.map(i => i.productId);
+    const products = await Product.find({
+      productId: { $in: productIds },
+      isActive: true
+    }).lean();
 
-    // 3️⃣ Prepare order items and calculate totals
     let cartItemCount = 0;
     let totalCartProductsAmount = 0;
     let totalCartDiscountAmount = 0;
     let totalSaveAmount = 0;
     let cartTotalAmount = 0;
 
-    const orderItems = cartItems.map(item => {
+    const orderItems = [];
+
+    // 3️⃣ Build order items (VARIANT SAFE)
+    for (const item of cartItems) {
       const product = products.find(p => p.productId === item.productId);
-      if (!product) return null;
+      if (!product) continue;
+
+      const variant = product.variants.find(
+        v => v._id.toString() === item.variantId.toString()
+      );
+      if (!variant) continue;
 
       const quantity = item.quantity;
-      const price = product.productprice || 0;
-      const discountPrice = product.productdiscountPrice || price;
+
+      // ✅ CORRECT PRICE SOURCE
+      const price = Number(variant.productprice) || 0;
+      const discountPrice =
+        Number(variant.productdiscountPrice) || price;
 
       const totalProductPrice = price * quantity;
       const totalDiscountPrice = discountPrice * quantity;
       const productsaveAmount = totalProductPrice - totalDiscountPrice;
 
-      // Update totals
       cartItemCount += quantity;
       totalCartProductsAmount += totalProductPrice;
       totalCartDiscountAmount += totalDiscountPrice;
       totalSaveAmount += productsaveAmount;
       cartTotalAmount += totalDiscountPrice;
 
-      return {
+      orderItems.push({
         productId: product.productId,
         productName: product.productName,
+        variantId: variant._id,
         quantity,
-        productimage: product.productimage || "",
-        productquantity: product.productquantity || "1 pc",
+        productimage: product.productimage,
+        productquantity: variant.productquantity,
         price,
         discountPrice,
         totalProductPrice,
         totalDiscountPrice,
         productsaveAmount
-      };
-    }).filter(Boolean);
+      });
+    }
 
-    // 4️⃣ Calculate charges
+    if (!orderItems.length) {
+      return res.status(400).json({
+        status: "error",
+        message: "No valid items to place order"
+      });
+    }
+
+    // 4️⃣ Charges
     const handlingCharge = 0;
     const deliveryCharge = cartTotalAmount >= 100 ? 0 : 25;
     const grandTotal = cartTotalAmount + handlingCharge + deliveryCharge;
 
-    // 5️⃣ Save order in DB (including all billing fields)
-    const newOrder = new Order({
+    // 5️⃣ Save order
+    const order = await Order.create({
       userId,
+      useraddress,
       items: orderItems,
       cartItemCount,
       totalCartProductsAmount,
@@ -77,20 +105,16 @@ const orderNow = async (req, res) => {
       grandTotal,
       estimatedDelivery: "30 mins",
       currentStep: 0,
-      status: "Placed",
-      useraddress:useraddress
+      status: "Placed"
     });
 
-    const savedOrder = await newOrder.save();
-
-    // 6️⃣ Clear user's cart
+    // 6️⃣ Clear cart
     await Cart.deleteMany({ userId });
 
-    // 7️⃣ Respond with order details
     return res.status(201).json({
       status: "success",
       message: "Order placed successfully",
-      data: savedOrder // sab DB fields already saved
+      data: order
     });
 
   } catch (err) {

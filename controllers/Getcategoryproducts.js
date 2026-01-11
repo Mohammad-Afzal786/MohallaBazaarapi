@@ -1,13 +1,7 @@
 import Product from "../models/ProductModel.js";
 import Category from "../models/CategoryModel.js";
+ 
 
-const shuffleArray = (array) => {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-};
 // GET /api/categoryProducts?categoryId=<id>
 export const getCategoryProducts = async (req, res) => {
   try {
@@ -22,8 +16,11 @@ export const getCategoryProducts = async (req, res) => {
       });
     }
 
-    // Check if category exists and active
-    const category = await Category.findOne({ categoryId, isActive: true }).lean();
+    // 🔹 Category check
+    const category = await Category.findOne({
+      categoryId,
+      isActive: true,
+    }).lean();
 
     if (!category) {
       return res.status(404).json({
@@ -34,36 +31,50 @@ export const getCategoryProducts = async (req, res) => {
       });
     }
 
-    
-      
-    // Fetch products under this category
-    let products = await Product.find({ categoryId, isActive: true }).lean();
+    // 🔹 Fetch products
+    let products = await Product.find({
+      categoryId,
+      isActive: true,
+    }).lean();
 
-        // 🔀 Shuffle products for random order
-        products = shuffleArray(products);
-    const productData = products.map((p) => ({
-      productId: p.productId,
-      productName: p.productName,
-      productimage: p.productimage,
-      productquantity: p.productquantity,
-      productprice: p.productprice,
-      productdiscountPrice: p.productdiscountPrice,
-      productsaveAmount: p.productsaveAmount,
-      productrating: p.productrating,
-      productratag: p.productratag,
-      productDescription: p.productDescription,
-      productreviews: p.productreviews,
-      producttime: p.producttime,
-       productsimagedetails: p.productsimagedetails || [p.productimage], // ✅ 
-    }));
+ 
+    const productData = products
+      .map((p) => {
+        if (!p.variants || !p.variants.length) return null;
+
+        return {
+          productId: p.productId,
+          productName: p.productName,
+          productimage: p.productimage,
+
+          // ✅ VARIANTS (same as home API)
+          variants: p.variants.map((v) => ({
+            variantId: v._id,
+            productquantity: v.productquantity,
+            productprice: v.productprice,
+            productdiscountPrice: v.productdiscountPrice,
+            productsaveAmount: v.productsaveAmount,
+            stock: v.stock,
+            isDefault: v.isDefault,
+          })),
+
+          productrating: p.productrating,
+          productratag: p.productratag,
+          productDescription: p.productDescription,
+          productreviews: p.productreviews,
+          producttime: p.producttime,
+          productsimagedetails:
+            p.productsimagedetails || [p.productimage],
+        };
+      })
+      .filter(Boolean);
 
     return res.status(200).json({
       status: "success",
       success: true,
       message: "Products fetched successfully by categoryId",
-      productData:productData
+      productData,
     });
-
   } catch (error) {
     console.error("Error fetching products by category:", error);
     return res.status(500).json({

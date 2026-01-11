@@ -11,6 +11,8 @@ const orderSchema = new mongoose.Schema({
       productId: { type: String, required: true },
       productName: { type: String, required: true },
       quantity: { type: Number, default: 1 },
+       variantId: { type: mongoose.Schema.Types.ObjectId, required: true },
+
       productimage: { type: String },
       productquantity: { type: String },
       price: { type: Number, required: true },       // MRP per unit

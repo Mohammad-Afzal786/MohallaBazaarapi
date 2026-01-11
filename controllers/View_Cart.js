@@ -33,7 +33,7 @@ const viewCart = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch products
+    // 2️⃣ Fetch products for all cart items
     const productIds = cartItems.map(item => item.productId);
     const products = await Product.find({ productId: { $in: productIds } });
 
@@ -43,18 +43,25 @@ const viewCart = async (req, res) => {
     let totalCartProductsAmount = 0;
     let totalSaveAmount = 0;
 
-    // 3️⃣ Map cart items with per-product totals
+    // 3️⃣ Map cart items with per-variant totals
     const cartList = cartItems.map(item => {
       const product = products.find(p => p.productId === item.productId);
       if (!product) return null;
 
-      const quantity = item.quantity;
-      const price = product.productprice || 0;
-      const discountPrice = product.productdiscountPrice || price;
+      // Find the specific variant
+      const variant = product.variants.find(v =>
+    v?._id && item.variantId &&
+    v._id.toString() === item.variantId.toString()
+  );
+      if (!variant) return null;
 
-      // per-product totals
-      const totalProductPrice = price * quantity;          // total MRP
-      const totalDiscountPrice = discountPrice * quantity; // total discounted price
+      const quantity = item.quantity;
+      const price = variant.productprice || 0;
+      const discountPrice = variant.productdiscountPrice || price;
+
+      // per-variant totals
+      const totalProductPrice = price * quantity;
+      const totalDiscountPrice = discountPrice * quantity;
       const productsaveAmount = totalProductPrice - totalDiscountPrice;
 
       // overall totals
@@ -65,10 +72,18 @@ const viewCart = async (req, res) => {
       totalSaveAmount += productsaveAmount;
 
       return {
-        ...product.toObject(),
+         
+        variantId: variant._id,
+        variantQuantity: variant.productquantity,
+        variantPrice: price,
+        variantDiscountPrice: discountPrice,
         quantity,
+        productimage:product.productimage,
         productprice: totalProductPrice,
         productdiscountPrice: totalDiscountPrice,
+        productName:product.productName,
+        productId:product.productId,
+
         productsaveAmount
       };
     }).filter(Boolean);

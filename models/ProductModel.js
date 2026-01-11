@@ -33,23 +33,23 @@ const productSchema = new mongoose.Schema(
       required: [true, "image is required"],
       trim: true,
     },
-    productquantity: {
-      type: String,
-      required: [true, "quantity is required"],
-      trim: true,
-    },
-    productprice: {
-      type: Number,
-      required: [true, "price is required"],
-    },
-    productdiscountPrice: {
-      type: Number,
+    // productquantity: {
+    //   type: String,
+    //   required: [true, "quantity is required"],
+    //   trim: true,
+    // },
+    // productprice: {
+    //   type: Number,
+    //   required: [true, "price is required"],
+    // },
+    // productdiscountPrice: {
+    //   type: Number,
   
-    },
-    productsaveAmount: {
-      type: Number,
-     required:true
-    },
+    // },
+    // productsaveAmount: {
+    //   type: Number,
+    //  required:true
+    // },
     productrating: {
       type: Number,
      required:true
@@ -64,10 +64,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required:true
     },
-    productsimagedetails: {
-      type: [String], // Array of image URLs
-      default: [],
-    },
+    
     producttime: {
       type: String,
       required:true
@@ -78,7 +75,28 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    
+    productsimagedetails: {
+      type: [String], // Array of image URLs
+      default: [],
+    },
+    // ✅ Add variants inside schema object
+    variants: {
+      type: [
+        {
+          productquantity: { type: String, required: true },
+          productprice: { type: Number, required: true },
+          productdiscountPrice: { type: Number, required: true },
+          productsaveAmount: { type: Number, required: true },
+          isDefault: { type: Boolean, default: false },
+          stock: { type: Number, default: 999 },
+        },
+      ],
+      default: [],
+    },
+  
   },
+  
   { timestamps: true }
 );
 

@@ -1,99 +1,114 @@
 // controllers/cartController.js
-import Cart from "../models/cartSchema.js";   // ध्यान: space हटाया
+import Cart from "../models/cartSchema.js";
 import Product from "../models/ProductModel.js";
 
 const addToCart = async (req, res) => {
   try {
-    let { userId, productId, action } = req.body;
+    let { userId, productId, variantId, action } = req.body;
 
-    // 1️⃣ Clean inputs
     userId = userId?.trim();
     productId = productId?.trim();
-    action = action?.trim(); // "increment" या "decrement"
+    action = action?.trim();
 
-    // 2️⃣ Validation
-    if (!userId || !productId || !action) {
+    // 1️⃣ Validation
+    if (!userId || !productId || !variantId || !action) {
       return res.status(400).json({
         status: "error",
-        message: "userId, productId and action are required",
+        message: "userId, productId, variantId and action are required",
       });
     }
 
-    // 3️⃣ Product check
-    const product = await Product.findOne({ productId }); 
-    if (!product || !product.isActive) {
+    // 2️⃣ Product + Variant check
+    const product = await Product.findOne({
+      productId,
+      isActive: true,
+    });
+
+    if (!product) {
       return res.status(404).json({
         status: "error",
         message: "Product not found or inactive",
       });
     }
 
-    // 4️⃣ Check cart for this user + product
-    let cartItem = await Cart.findOne({ userId, productId });
+    const variant = product.variants.id(variantId);
+    if (!variant) {
+      return res.status(404).json({
+        status: "error",
+        message: "Variant not found",
+      });
+    }
 
+    if (variant.stock <= 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "Variant out of stock",
+      });
+    }
+
+    // 3️⃣ Find cart item
+    let cartItem = await Cart.findOne({ userId, productId, variantId });
+
+    // ================= UPDATE EXISTING =================
     if (cartItem) {
-      // ✅ Update quantity based on action
       if (action === "increment") {
+        if (cartItem.quantity >= variant.stock) {
+          return res.status(400).json({
+            status: "error",
+            message: "Stock limit reached",
+          });
+        }
         cartItem.quantity += 1;
-      } else if (action === "decrement") {
-        cartItem.quantity = Math.max(cartItem.quantity - 1, 0); // minimum 0
-      } else {
+      } 
+      else if (action === "decrement") {
+        cartItem.quantity -= 1;
+      } 
+      else {
         return res.status(400).json({
           status: "error",
-          message: "Invalid action. Must be 'increment' or 'decrement'",
+          message: "Invalid action",
         });
       }
 
-      // Remove item if quantity becomes 0
-      if (cartItem.quantity === 0) {
+      // Remove if quantity zero
+      if (cartItem.quantity <= 0) {
         await Cart.deleteOne({ _id: cartItem._id });
+        cartItem = null;
       } else {
         await cartItem.save();
       }
-
-      // 🔹 Get total cart items for this user
-      const totalCartItemsAgg = await Cart.aggregate([
-        { $match: { userId } },
-        { $group: { _id: null, total: { $sum: "$quantity" } } },
-      ]);
-      const totalCartItems = totalCartItemsAgg[0]?.total || 0;
-
-      return res.status(200).json({
-        status: "success",
-        message: `Cart quantity ${action === "increment" ? "increased" : "decreased"}`,
-        totalCartItem: totalCartItems,
-        data: cartItem.quantity === 0 ? null : cartItem,
-      });
     }
 
-    // 5️⃣ New entry → only allow increment
-    if (action === "increment") {
-      const newCart = new Cart({
+    // ================= CREATE NEW =================
+    else {
+      if (action !== "increment") {
+        return res.status(400).json({
+          status: "error",
+          message: "Cannot decrement non-existing cart item",
+        });
+      }
+
+      cartItem = await Cart.create({
         userId,
         productId,
+        variantId,
         quantity: 1,
       });
-      const savedCart = await newCart.save();
-
-      // 🔹 Total cart items
-      const totalCartItemsAgg = await Cart.aggregate([
-        { $match: { userId } },
-        { $group: { _id: null, total: { $sum: "$quantity" } } },
-      ]);
-      const totalCartItems = totalCartItemsAgg[0]?.total || 0;
-
-      return res.status(201).json({
-        status: "success",
-        message: "Product added to cart",
-        totalCartItem: totalCartItems,
-        data: savedCart,
-      });
-    } else {
-      return res.status(400).json({
-        status: "error",
-        message: "Cannot decrement a product that is not in the cart",
-      });
     }
+
+    // 4️⃣ Total cart count
+    const totalAgg = await Cart.aggregate([
+      { $match: { userId } },
+      { $group: { _id: null, total: { $sum: "$quantity" } } },
+    ]);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Cart updated successfully",
+      totalCartItem: totalAgg[0]?.total || 0,
+      data: cartItem,
+    });
+
   } catch (err) {
     console.error("Error in addToCart:", err);
     return res.status(500).json({
