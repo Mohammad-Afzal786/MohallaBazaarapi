@@ -31,6 +31,8 @@ import { logUserActivity } from "../controllers/activityController.js";
 import { trackSingleOrder } from "../controllers/trackSingleOrder.js";
 import { cancelOrderbyuser } from "../controllers/order_cancel_byuser.js";
 import { saveFcmToken } from "../controllers/FcmController.js";
+import { unifiedSearch } from "../controllers/searchController.js";
+ 
 const route = express.Router();
 
 
@@ -43,7 +45,7 @@ const route = express.Router();
  * ================================
  */
 
-
+route.get("/search", unifiedSearch);
 // Get all records
 route.get("/", getallrecord);
 
@@ -59,7 +61,7 @@ route.post("/register", createUser);
 // User login with rate limiter applied
 
 route.post("/login", loginUser);
-
+ 
 // Refresh JWT token
 route.post("/token/refresh", refreshToken);
 

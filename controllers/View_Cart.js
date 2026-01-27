@@ -11,7 +11,13 @@ const viewCart = async (req, res) => {
     }
 
     // 1️⃣ Fetch cart items
-    const cartItems = await Cart.find({ userId });
+
+    // const cartItems = await Cart.find({ userId }).sort({ createdAt: -1 });
+
+    let cartItems = await Cart.find({ userId });
+
+    // Sort so latest added or updated items come first
+    cartItems.sort((a, b) => b.updatedAt - a.updatedAt); // descending order
 
     if (!cartItems || cartItems.length === 0) {
       return res.status(200).json({
@@ -50,9 +56,9 @@ const viewCart = async (req, res) => {
 
       // Find the specific variant
       const variant = product.variants.find(v =>
-    v?._id && item.variantId &&
-    v._id.toString() === item.variantId.toString()
-  );
+        v?._id && item.variantId &&
+        v._id.toString() === item.variantId.toString()
+      );
       if (!variant) return null;
 
       const quantity = item.quantity;
@@ -72,21 +78,23 @@ const viewCart = async (req, res) => {
       totalSaveAmount += productsaveAmount;
 
       return {
-         
+
         variantId: variant._id,
         variantQuantity: variant.productquantity,
         variantPrice: price,
         variantDiscountPrice: discountPrice,
         quantity,
-        productimage:product.productimage,
+        productimage: product.productimage,
         productprice: totalProductPrice,
         productdiscountPrice: totalDiscountPrice,
-        productName:product.productName,
-        productId:product.productId,
+        productName: product.productName,
+        productId: product.productId,
 
         productsaveAmount
       };
     }).filter(Boolean);
+
+
 
     // 4️⃣ Totals & delivery
     const handlingCharge = 0;

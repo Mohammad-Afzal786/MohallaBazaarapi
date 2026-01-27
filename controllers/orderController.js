@@ -88,7 +88,7 @@ const orderNow = async (req, res) => {
 
     // 4️⃣ Charges
     const handlingCharge = 0;
-    const deliveryCharge = cartTotalAmount >= 100 ? 0 : 25;
+    const deliveryCharge = cartTotalAmount >= 100 ? 0 : 0;
     const grandTotal = cartTotalAmount + handlingCharge + deliveryCharge;
 
     // 5️⃣ Save order
