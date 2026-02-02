@@ -14,6 +14,12 @@ import {
 } from "../controllers/admin/appVersionRoute.js";
 
 
+//adminapp
+import { homepageSummary } from "../controllers/admin/homepagesummary.js";
+
+ 
+
+
 const adminroute = express.Router();
 /**
  * ================================
@@ -30,4 +36,9 @@ adminroute.get('/appversion', appversion);
 adminroute.post("/insertAppVersion", insertAppVersion);   // Admin use karega
 
 adminroute.get("/migrate-last-product", migrateAllProducts);
+
+
+
+adminroute.get("/homepagesummary", homepageSummary);
+
 export default adminroute;
