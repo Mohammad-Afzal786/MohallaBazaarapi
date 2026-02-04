@@ -1,15 +1,21 @@
 import { UserActivity } from "../models/userActivitySchema.js";
+import User from "../models/UserRagisterationModel.js";
 
 // 🔹 Log when user opens dashboard
 const logUserActivity = async (req, res) => {
   try {
-    const { userId } = req.body; // frontend se userId bhejenge
+    const { userId ,appVersionId, } = req.body; // frontend se userId bhejenge
 
-    if (!userId) {
+    if (!userId || !appVersionId) {
       return res.status(400).json({ success: false, message: "userId is required" });
-    }
+    } 
 
-    const updated = await UserActivity.logActivity(userId);
+    // 🔹 Check if user exists in DB
+    const userExists = await User.findOne({ userId });
+    if (!userExists) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    const updated = await UserActivity.logActivity(userId  , appVersionId );
 
     return res.status(200).json({
       success: true,

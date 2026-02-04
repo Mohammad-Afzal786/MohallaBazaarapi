@@ -5,14 +5,14 @@ const orderHistory = async (req, res) => {
     const { userId } = req.query;
 
     if (!userId) {
-      return res.status(400).json({ status: "error", message: "userId is required" });
+      return res.status(200).json({ status: "error", message: "userId is required" });
     }
 
     // 🔹 Fetch all orders for the user, latest first
     const orders = await Order.find({ userId }).sort({ createdAt: -1 });
 
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ status: "error", message: "No orders found" });
+      return res.status(200).json({ status: "error", message: "No orders found" });
     }
 
     // 🔹 Format response including billing summary and items

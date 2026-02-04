@@ -10,9 +10,7 @@ const viewCart = async (req, res) => {
       return res.status(400).json({ status: "error", message: "userId is required" });
     }
 
-    // 1️⃣ Fetch cart items
-
-    // const cartItems = await Cart.find({ userId }).sort({ createdAt: -1 });
+     
 
     let cartItems = await Cart.find({ userId });
 

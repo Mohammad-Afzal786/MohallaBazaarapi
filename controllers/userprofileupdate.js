@@ -14,8 +14,9 @@ const userProfileUpdate = async (req, res) => {
 
    
     // 🔹 Find and update
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
+   // 🔹 Find user by userId (not _id) and update
+    const updatedUser = await User.findOneAndUpdate(
+      { userId }, // search by userId
       { name },
       { new: true, runValidators: true }
     ).select("-__v -password"); // exclude __v and password

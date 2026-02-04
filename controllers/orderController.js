@@ -1,7 +1,7 @@
 import Cart from "../models/cartSchema.js";
 import Product from "../models/ProductModel.js";
 import Order from "../models/Order.js";
-
+import User from "../models/UserRagisterationModel.js";
 const orderNow = async (req, res) => {
   try {
     const { userId, useraddress } = req.body;
@@ -21,7 +21,13 @@ const orderNow = async (req, res) => {
         message: "Cart is empty"
       });
     }
-
+    const userExists = await User.findOne({ userId });
+    if (!userExists) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found"
+      });
+    }
     // 2️⃣ Fetch products
     const productIds = cartItems.map(i => i.productId);
     const products = await Product.find({

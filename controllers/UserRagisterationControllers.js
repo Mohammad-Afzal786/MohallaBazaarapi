@@ -1,84 +1,91 @@
 import dotenv from "dotenv";
 dotenv.config();
 import User from "../models/UserRagisterationModel.js";
-import bcrypt from "bcrypt";
 
-// --- Validators ---
+const phoneRegex = /^\d{10}$/;
 
-const passwordRegex = /^.{6,}$/; // At least 6 characters
-const phoneRegex = /^\d{10}$/; // Exactly 10 digits
-
-// --- Guards: require envs ---
-if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET missing");
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) throw new Error("EMAIL creds missing");
-if (!process.env.BASE_URL) throw new Error("BASE_URL missing");
-
-// --- Register Api ---
 const createUser = async (req, res) => {
     try {
-        let { name, password, phone, fcmtoken } = req.body;
+        let { name, phone, fcmtoken } = req.body;
 
-        // Trim inputs
         name = name?.trim();
         phone = phone?.trim();
-        password = password?.trim();
-        
 
-        // 1️⃣ Required fields check
-        if (!name || !password || !phone) {
-            return res.status(400).json({ message: "नाम, फ़ोन नंबर और पासवर्ड — तीनों भरना ज़रूरी है।" });
+        // 1️⃣ Required fields
+        if (!name || !phone) {
+            return res.status(400).json({
+                message: "नाम और फ़ोन नंबर भरना ज़रूरी है।",
+            });
         }
 
-        // 2️⃣ phone format check
+        // 2️⃣ Phone validation
         if (!phoneRegex.test(phone)) {
-            return res.status(400).json({ message: "फ़ोन नंबर 10 अंकों का होना चाहिए।" });
+            return res.status(400).json({
+                message: "फ़ोन नंबर 10 अंकों का होना चाहिए।",
+            });
         }
 
-        // 3️⃣ Strong password check
-        if (!passwordRegex.test(password)) {
-            return res.status(400).json({ message: "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।" });
+        // 3️⃣ Check existing user
+        let user = await User.findOne({ phone });
+
+        if (user) {
+            // 🔹 Update FCM token silently
+            if (fcmtoken && user.fcmtoken !== fcmtoken) {
+                user.fcmtoken = fcmtoken;
+                await user.save();
+            }
+
+            // ✅ Reuse existing user
+            return res.status(200).json({
+                message: "User already exists",
+                userId: user.userId,
+                name: user.name,
+                phone: user.phone,
+                fcmtoken: user.fcmtoken || null,
+
+
+                user: {
+
+                    userId: user.userId,   // sequential ID (U-000001)
+                    name: user.name,
+                    phone: user.phone,
+                    fcmtoken: user.fcmtoken || null,
+                },
+            });
         }
 
-      
-
-        // 5️⃣ Duplicate phone check
-        const existingUser = await User.findOne({ phone });
-        if (existingUser) {
-            return res.status(409).json({ message: "Mobile number already exists" });
-        }
-
-        // 6️⃣ Password hashing
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // 7️⃣ Save user (email optional)
+        // 4️⃣ Create new user
         const savedUser = await new User({
             name,
-            password: hashedPassword,
+            password: null,
             phone,
             fcmtoken: fcmtoken || null,
             registration_date: new Date(),
-            isVerified: false
+            isVerified: false,
         }).save();
 
-        // ✅ Response to client
+
+        // ✅ New user response
         return res.status(201).json({
             message: "User created successfully",
-            userId: savedUser._id,
+
+            userId: savedUser.userId,
             name: savedUser.name,
             phone: savedUser.phone,
             fcmtoken: savedUser.fcmtoken || null,
             user: {
-                id: savedUser._id,
+
+                userId: savedUser.userId,
                 name: savedUser.name,
                 phone: savedUser.phone,
-                
-                fcmtoken: savedUser.fcmtoken || null
-            }
+                fcmtoken: savedUser.fcmtoken || null,
+            },
         });
-
     } catch (err) {
         console.error("Error in createUser:", err);
-        return res.status(500).json({ message: "Something went wrong, please try again later." });
+        return res.status(500).json({
+            message: "Something went wrong, please try again later.",
+        });
     }
 };
 

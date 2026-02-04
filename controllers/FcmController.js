@@ -12,8 +12,9 @@ const saveFcmToken = async (req, res) => {
     if (!userId || !fcmtoken) {
       return res.status(400).json({ status: "error" });
     }
+    const user = await User.findOne({ userId });
 
-    const user = await User.findById(userId);
+
     if (!user) {
       return res.status(404).json({ status: "error" });
     }
