@@ -1,9 +1,12 @@
 import Order from "../../models/Order.js";
+import User from "../../models/UserRagisterationModel.js";
+import { UserActivity } from "../../models/userActivitySchema.js";
+import { AppVersion } from "../../models/AppVersion.js";
+
 const homepageSummary = async (req, res) => {
   try {
     const pendingStatuses = ["Placed", "Confirmed", "Preparing"];
 
-    // 📅 Today range
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -21,7 +24,15 @@ const homepageSummary = async (req, res) => {
     ).length;
 
     const allCount = orders.length;
+    const totalUsers = await User.countDocuments();
 
+    const activeDates = await UserActivity.distinct("date");
+    const todayActiveUsersCount = activeDates.length;
+
+    // 🔹 App Version
+    const appVersion  = await AppVersion.countDocuments();
+
+ 
     res.status(200).json({
       status: "success",
       message: "Homepage summary fetched successfully",
@@ -40,6 +51,21 @@ const homepageSummary = async (req, res) => {
           title: "All Orders",
           image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
           count: allCount
+        },
+        {
+          title: "Users Activity",
+          image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+          count: todayActiveUsersCount
+        },
+        {
+          title: "Total Users",
+          image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+          count: totalUsers
+        },
+        {
+          title: "App Version",
+          image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+          count: appVersion,
         }
       ]
     });
@@ -52,4 +78,5 @@ const homepageSummary = async (req, res) => {
     });
   }
 };
+
 export { homepageSummary };

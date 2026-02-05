@@ -16,6 +16,9 @@ import {
 
 //adminapp
 import { homepageSummary } from "../controllers/admin/homepagesummary.js";
+import { userManagement } from "../controllers/admin/userManagement.js";
+import { getFullUserActivity } from "../controllers/admin/getuserfullactivity.js";
+
 
  
 
@@ -40,5 +43,8 @@ adminroute.get("/migrate-last-product", migrateAllProducts);
 
 
 adminroute.get("/homepagesummary", homepageSummary);
+adminroute.get("/usermanagement", userManagement);
+
+adminroute.get("/getFullUserActivity", getFullUserActivity);
 
 export default adminroute;
